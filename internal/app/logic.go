@@ -26,6 +26,12 @@ func (b *BotApp) CalculateTotalCost(baseCost int, draftConfig map[string]interfa
 }
 
 func (b *BotApp) ProcessImageGeneration(user *User, chatID int64, prompt string) {
+	// REFRESH DATA USER: Pastikan kita punya data draft terbaru (termasuk foto yang baru diupload)
+	freshUser, err := b.DB.GetOrCreateUser(user.ID)
+	if err == nil {
+		user = freshUser
+	}
+
 	modelConf := b.GetModelByID(user.SelectedModel)
 	if modelConf.ID == "" { return }
 

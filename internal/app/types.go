@@ -23,4 +23,10 @@ type ModelConfig struct {
 	Enabled     bool             `json:"enabled"`
 	Parameters  []ModelParameter `json:"parameters"`
 	Description string           `json:"description"`
+
+	// --- FIELD BARU (PENTING) ---
+	// Field ini wajib ada agar ui.go dan handlers.go tidak error
+	AcceptsImageInput     bool   `json:"accepts_image_input"`
+	AcceptsMultipleImages bool   `json:"accepts_multiple_images"`
+	ImageParamName        string `json:"image_parameter_name"` 
 }

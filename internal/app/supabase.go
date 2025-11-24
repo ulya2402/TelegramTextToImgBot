@@ -77,7 +77,16 @@ func (db *Database) UpdateState(telegramID int64, state string, modelKey string)
 	updates := map[string]interface{}{
 		"current_state":  state,
 		"selected_model": modelKey,
-		"draft_config":   make(map[string]interface{}), // Reset draft on new model
+		"draft_config":   make(map[string]interface{}), // RESET DATA (Hati-hati)
+	}
+	_, _, err := db.client.From("users").Update(updates, "", "").Eq("id", fmt.Sprintf("%d", telegramID)).Execute()
+	return err
+}
+
+// [FUNGSI BARU] UpdateCurrentState: Hanya ganti status, DRAFT TETAP AMAN (Dipakai navgasi menu)
+func (db *Database) UpdateCurrentState(telegramID int64, state string) error {
+	updates := map[string]interface{}{
+		"current_state": state,
 	}
 	_, _, err := db.client.From("users").Update(updates, "", "").Eq("id", fmt.Sprintf("%d", telegramID)).Execute()
 	return err

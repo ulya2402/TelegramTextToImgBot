@@ -22,7 +22,7 @@ type ReplicateRequest struct {
 type ReplicateResponse struct {
 	ID     string      `json:"id"`
 	Status string      `json:"status"`
-	Output interface{} `json:"output"` // Output bisa string atau array
+	Output interface{} `json:"output"`
 	Error  interface{} `json:"error"`
 	URLs   struct {
 		Get string `json:"get"`
@@ -33,57 +33,106 @@ func NewReplicate(token string) *ReplicateConfig {
 	return &ReplicateConfig{Token: token}
 }
 
-// Return type diubah menjadi []string (List of URLs)
 func (r *ReplicateConfig) Generate(modelConf ModelConfig, userInput string, extraInputs map[string]interface{}) ([]string, error) {
 	client := &http.Client{Timeout: 120 * time.Second}
 	payloadData := make(map[string]interface{})
 
-	// 1. Default Parameters
+	// 1. Masukkan Default Parameters
 	for _, param := range modelConf.Parameters {
 		if param.Default != nil {
 			payloadData[param.Name] = param.Default
 		}
 	}
 
-	// 2. User Inputs + Type Casting
+	// 2. Masukkan Input User
 	for k, v := range extraInputs {
-		var expectedType string
-		for _, p := range modelConf.Parameters {
-			if p.Name == k {
-				expectedType = p.Type
-				break
+		// KASUS A: Input adalah Array (Multiple Images)
+		if list, ok := v.([]interface{}); ok {
+			var rawURLs []string
+			for _, item := range list {
+				if str, ok := item.(string); ok {
+					// Validasi sederhana: harus ada http
+					if strings.HasPrefix(str, "http") {
+						rawURLs = append(rawURLs, str)
+					}
+				}
 			}
+			// LANGSUNG masukkan sebagai Array of Strings.
+			// Tidak perlu dibungkus object {"value":...} lagi.
+			payloadData[k] = rawURLs
+			continue
 		}
 
-		strVal, isString := v.(string)
-		
-		if isString && expectedType == "integer" {
-			if intVal, err := strconv.Atoi(strVal); err == nil {
-				payloadData[k] = intVal
-			} else {
-				payloadData[k] = v
+		// KASUS B: Input adalah String Tunggal
+		if strVal, isString := v.(string); isString {
+			// Validasi URL untuk gambar
+			isImageParam := (k == "image_input" || k == "input_images" || k == "reference_images" || k == "image")
+			if isImageParam && !strings.HasPrefix(strVal, "http") {
+				return nil, fmt.Errorf("invalid image URL: %s", strVal)
 			}
-		} else if isString && (expectedType == "number" || expectedType == "float") {
-			if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil {
-				payloadData[k] = floatVal
+
+			// JIKA parameter ini biasanya butuh Array (seperti image_input), kita bungkus string tunggal jadi Array.
+			if k == "image_input" || k == "input_images" || k == "reference_images" {
+				payloadData[k] = []string{strVal}
+				continue
+			}
+
+			// Type Casting untuk Angka
+			var expectedType string
+			for _, p := range modelConf.Parameters {
+				if p.Name == k {
+					expectedType = p.Type
+					break
+				}
+			}
+
+			if expectedType == "integer" {
+				if intVal, err := strconv.Atoi(strVal); err == nil {
+					payloadData[k] = intVal
+				} else {
+					payloadData[k] = v
+				}
+			} else if expectedType == "number" || expectedType == "float" {
+				if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil {
+					payloadData[k] = floatVal
+				} else {
+					payloadData[k] = v
+				}
 			} else {
+				// String biasa (misal aspect_ratio)
 				payloadData[k] = v
 			}
 		} else {
+			// Boolean atau tipe lain
 			payloadData[k] = v
 		}
 	}
 
-	// 3. Prompt
+	// 3. Set Prompt
 	payloadData["prompt"] = userInput
 
+	// --- DEBUGGING LOG ---
+	debugJSON, _ := json.MarshalIndent(payloadData, "", "  ")
+	fmt.Printf("[DEBUG] Payload to Replicate:\n%s\n", string(debugJSON))
+	// ---------------------
+
 	reqBody := ReplicateRequest{Input: payloadData}
-	parts := strings.Split(modelConf.ReplicateID, "/")
-	if len(parts) != 2 { return nil, fmt.Errorf("invalid replicate_id") }
 	
-	apiURL := fmt.Sprintf("https://api.replicate.com/v1/models/%s/%s/predictions", parts[0], parts[1])
+	// Parsing ID
+	var apiURL string
+	if strings.HasPrefix(modelConf.ReplicateID, "google/") {
+		parts := strings.Split(modelConf.ReplicateID, "/")
+		apiURL = fmt.Sprintf("https://api.replicate.com/v1/models/%s/%s/predictions", parts[0], parts[1])
+	} else {
+		parts := strings.Split(modelConf.ReplicateID, "/")
+		if len(parts) == 2 {
+			apiURL = fmt.Sprintf("https://api.replicate.com/v1/models/%s/%s/predictions", parts[0], parts[1])
+		} else {
+			return nil, fmt.Errorf("invalid replicate_id format")
+		}
+	}
+
 	jsonData, _ := json.Marshal(reqBody)
-	
 	req, _ := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonData))
 	req.Header.Set("Authorization", "Bearer "+r.Token)
 	req.Header.Set("Content-Type", "application/json")
@@ -128,7 +177,6 @@ func (r *ReplicateConfig) pollResult(url string) ([]string, error) {
 	}
 }
 
-// Logic baru: Selalu mengembalikan Array of Strings
 func parseOutput(output interface{}) []string {
 	var urls []string
 	switch v := output.(type) {
