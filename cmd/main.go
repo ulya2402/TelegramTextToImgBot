@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	fmt.Println("[INFO] Starting Business Bot v3.0 (Modular Architecture)...")
+	fmt.Println("[INFO] Starting TelegramTextToImgBot v1.0 (Modular Architecture)...")
 	godotenv.Load()
 
 	// 1. Load Vars
