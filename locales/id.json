@@ -1,0 +1,19 @@
+{
+  "welcome": "Selamat datang di Bisnis Bot. Kredit Anda: %d.",
+  "no_credits": "Kredit tidak mencukupi.",
+  "processing": "Sedang memproses permintaan...",
+  "error_generic": "Terjadi kesalahan.",
+  "select_provider": "Pilih Penyedia AI:",
+  "select_model": "Pilih Model:",
+  "model_unavailable": "Model tidak tersedia untuk penyedia ini.",
+  "settings_panel": "🤖 **%s**\n\nPengaturan Saat Ini:\n%s\n\n👇 *Ketuk tombol untuk ubah, ATAU ketik prompt untuk mulai:*",
+  "change_btn": "⚙️ %s",
+  "select_val": "Pilih nilai untuk **%s**:",
+  "back_btn": "⬅️ Kembali",
+  "back_to_prov": "⬅️ Kembali ke Provider",
+  "cancel_btn": "❌ Batal / Reset",
+  "img_received": "🖼️ Gambar diterima! Sekarang masukkan prompt teks.",
+  "use_img_cmd": "Gunakan /img untuk memulai.",
+  "cancelled": "❌ Operasi dibatalkan.",
+  "profile_msg": "👤 <b>Profil Pengguna</b>\n\n🆔 ID: <code>%d</code>\n💰 Sisa Kredit: <b>%d</b>\n⏳ Reset Gratis Berikutnya: <b>%s</b>"
+}

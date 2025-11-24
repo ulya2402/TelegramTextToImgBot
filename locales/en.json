@@ -1,0 +1,19 @@
+{
+  "welcome": "Welcome to Business Bot. Your credits: %d.",
+  "no_credits": "Insufficient credits.",
+  "processing": "Processing your request...",
+  "error_generic": "An error occurred.",
+  "select_provider": "Select AI Provider:",
+  "select_model": "Select Model:",
+  "model_unavailable": "No models available for this provider.",
+  "settings_panel": "🤖 **%s**\n\nCurrent Settings:\n%s\n\n👇 *Tap buttons to change settings, OR type prompt to start:*",
+  "change_btn": "⚙️ %s",
+  "select_val": "Select value for **%s**:",
+  "back_btn": "⬅️ Back",
+  "back_to_prov": "⬅️ Back to Providers",
+  "cancel_btn": "❌ Cancel / Reset",
+  "img_received": "🖼️ Image received! Now enter your text prompt.",
+  "use_img_cmd": "Please use /img to start.",
+  "cancelled": "❌ Operation cancelled.",
+  "profile_msg": "👤 <b>User Profile</b>\n\n🆔 ID: <code>%d</code>\n💰 Credits Remaining: <b>%d</b>\n⏳ Next Free Reset: <b>%s</b>"
+}

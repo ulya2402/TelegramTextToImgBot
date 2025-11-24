@@ -1,0 +1,16 @@
+# Env 
+.env
+
+# Binaries
+/bin
+/dist
+main
+main.exe
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Go specific
+/vendor/
+go.work
